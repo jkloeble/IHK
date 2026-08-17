@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ferientagebuch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#101a2b;
+    --surface:#182741;
+    --surface-2:#1f3050;
+    --surface-3:#28405f;
+    --text:#f2ece1;
+    --text-muted:#93a6be;
+    --line:rgba(242,236,225,0.10);
+    --gold:#e8a657;
+    --coral:#e2795a;
+    --plum:#8a6fa0;
+    --high:#7fc9a0;
+    --low:#c47a8a;
+    --radius:14px;
+    --shadow: 0 20px 40px -20px rgba(0,0,0,0.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(232,166,87,0.08), transparent 60%),
+      radial-gradient(1000px 500px at 100% 10%, rgba(138,111,160,0.10), transparent 55%),
+      var(--ink);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    line-height:1.5;
+  }
+
+  ::selection{ background:var(--gold); color:#101a2b; }
+
+  :focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  .app{
+    max-width:760px;
+    margin:0 auto;
+    padding:56px 24px 120px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{ margin-bottom:44px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin:0 0 14px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(32px, 5vw, 46px);
+    line-height:1.08;
+    margin:0 0 14px;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--text-muted);
+    font-size:16px;
+    max-width:50ch;
+    margin:0;
+  }
+
+  /* ---------- Card base ---------- */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+
+  /* ---------- Composer ---------- */
+  .composer{
+    padding:28px;
+    margin-bottom:56px;
+  }
+  .composer h2{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:20px;
+    margin:0 0 20px;
+  }
+  .field-row, .field{
+    margin-bottom:18px;
+  }
+  label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-muted);
+    margin-bottom:8px;
+  }
+  .dot{
+    width:8px; height:8px; border-radius:50%;
+    display:inline-block;
+    flex:none;
+  }
+  .dot-high{ background:var(--high); box-shadow:0 0 0 3px rgba(127,201,160,0.15); }
+  .dot-low{ background:var(--low); box-shadow:0 0 0 3px rgba(196,122,138,0.15); }
+
+  input[type="date"], textarea{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+    resize:vertical;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  input[type="date"]{
+    max-width:220px;
+    font-family:'IBM Plex Mono', monospace;
+    color-scheme:dark;
+  }
+  input::placeholder, textarea::placeholder{ color:#5f7186; }
+  input:hover, textarea:hover{ background:var(--surface-3); }
+  input:focus, textarea:focus{ border-color:var(--gold); }
+
+  .actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:16px;
+    margin-top:22px;
+  }
+  .form-error{
+    font-size:13px;
+    color:var(--low);
+    margin-right:auto;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg, var(--gold), var(--coral));
+    color:#1a1206;
+    border:none;
+    font-weight:600;
+    font-size:14.5px;
+    padding:11px 22px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 8px 20px -8px rgba(232,166,87,0.5); }
+  .btn-primary:active{ transform:translateY(0); }
+
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--text-muted);
+    font-size:13px;
+    font-weight:500;
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .btn-ghost:hover{ border-color:var(--gold); color:var(--text); }
+
+  /* ---------- Timeline header ---------- */
+  .timeline-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px 20px;
+    margin-bottom:26px;
+  }
+  .timeline-head h2{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:22px;
+    margin:0;
+  }
+  .pill-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .pill{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:5px 10px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    color:var(--text-muted);
+    background:var(--surface);
+    cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .pill:hover{ border-color:var(--gold); color:var(--text); }
+
+  /* ---------- Entries / spine ---------- */
+  .entries{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    position:relative;
+  }
+
+  .entry{
+    position:relative;
+    padding:22px 24px 20px 26px;
+    border-left:3px solid var(--day-color, var(--gold));
+    animation:rise .35s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .entry{ animation:none; }
+  }
+
+  .entry-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .entry-head-left{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .day-badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:var(--day-color, var(--gold));
+    text-transform:uppercase;
+  }
+  .entry-date{
+    font-family:'Fraunces', serif;
+    font-size:18px;
+    font-weight:500;
+  }
+  .entry-tools{ display:flex; gap:6px; }
+  .icon-btn{
+    width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center;
+    background:transparent;
+    border:1px solid var(--line);
+    border-radius:8px;
+    color:var(--text-muted);
+    cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .icon-btn:hover{ border-color:var(--gold); color:var(--text); }
+  .icon-btn svg{ width:14px; height:14px; }
+
+  .entry-body{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  @media (max-width:560px){
+    .entry-body{ grid-template-columns:1fr; }
+  }
+  .block{
+    background:var(--surface-2);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .block-label{
+    display:flex; align-items:center; gap:7px;
+    font-size:12px; font-weight:600;
+    color:var(--text-muted);
+    margin-bottom:6px;
+  }
+  .block-text{
+    font-size:14.5px;
+    color:var(--text);
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .block-text.empty{ color:#5f7186; font-style:italic; }
+
+  .entry-edit textarea{ margin-bottom:8px; }
+  .edit-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:10px; }
+
+  /* ---------- States ---------- */
+  .empty-state, .loading-state{
+    text-align:center;
+    padding:48px 20px;
+    color:var(--text-muted);
+    font-size:14.5px;
+  }
+  .empty-state svg{ opacity:0.5; margin-bottom:14px; }
+
+  .error-banner{
+    background:rgba(196,122,138,0.12);
+    border:1px solid rgba(196,122,138,0.35);
+    color:var(--low);
+    padding:12px 16px;
+    border-radius:10px;
+    font-size:13.5px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .error-banner button{
+    background:transparent;
+    border:1px solid rgba(196,122,138,0.4);
+    color:var(--low);
+    border-radius:7px;
+    padding:6px 12px;
+    font-size:13px;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="hero">
+    <p class="eyebrow">Ferientagebuch</p>
+    <h1>Deine Woche,<br>Abend für Abend</h1>
+    <p class="sub">Halte an jedem Ferientag fest, was hell war und was schwer. Deine Einträge sortieren sich automatisch nach Datum.</p>
+  </header>
+
+  <div id="error-slot"></div>
+
+  <section class="composer card" id="composer">
+    <h2 id="composer-title">Neuer Eintrag</h2>
+    <form id="entry-form">
+      <div class="field-row">
+        <label for="entry-date">Datum</label>
+        <input type="date" id="entry-date" required>
+      </div>
+      <div class="field">
+        <label for="entry-highlight"><span class="dot dot-high"></span>Highlight des Tages</label>
+        <textarea id="entry-highlight" rows="2" placeholder="Was hat heute besonders gestrahlt?"></textarea>
+      </div>
+      <div class="field">
+        <label for="entry-lowlight"><span class="dot dot-low"></span>Lowlight des Tages</label>
+        <textarea id="entry-lowlight" rows="2" placeholder="Was war heute schwer, nervig oder unschön?"></textarea>
+      </div>
+      <div class="actions">
+        <span class="form-error" id="form-error"></span>
+        <button type="button" class="btn-ghost" id="cancel-edit-btn" hidden>Abbrechen</button>
+        <button type="submit" class="btn-primary" id="submit-btn">Eintrag speichern</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="timeline-wrap">
+    <div class="timeline-head">
+      <h2>Deine Tage</h2>
+      <div class="pill-row" id="day-pills"></div>
+    </div>
+
+    <div class="loading-state" id="loading-state">Lade deine Einträge …</div>
+
+    <div class="empty-state" id="empty-state" hidden>
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="margin:0 auto 14px;display:block;">
+        <path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4Z"></path>
+        <path d="M8 8h6M8 12h6M8 16h3"></path>
+      </svg>
+      Deine Woche wartet auf ihre ersten Zeilen.<br>Schreib heute Abend den ersten Eintrag.
+    </div>
+
+    <div class="entries" id="entries-list"></div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'diary:entries';
+
+  const els = {
+    form: document.getElementById('entry-form'),
+    date: document.getElementById('entry-date'),
+    highlight: document.getElementById('entry-highlight'),
+    lowlight: document.getElementById('entry-lowlight'),
+    formError: document.getElementById('form-error'),
+    submitBtn: document.getElementById('submit-btn'),
+    cancelBtn: document.getElementById('cancel-edit-btn'),
+    composerTitle: document.getElementById('composer-title'),
+    loading: document.getElementById('loading-state'),
+    empty: document.getElementById('empty-state'),
+    list: document.getElementById('entries-list'),
+    pills: document.getElementById('day-pills'),
+    errorSlot: document.getElementById('error-slot'),
+  };
+
+  let entries = [];
+  let editingId = null;
+
+  // default date field to today
+  els.date.value = new Date().toISOString().slice(0, 10);
+
+  function showError(message, onRetry){
+    els.errorSlot.innerHTML = '';
+    const banner = document.createElement('div');
+    banner.className = 'error-banner';
+    const span = document.createElement('span');
+    span.textContent = message;
+    banner.appendChild(span);
+    if (onRetry){
+      const btn = document.createElement('button');
+      btn.textContent = 'Erneut versuchen';
+      btn.onclick = () => { els.errorSlot.innerHTML = ''; onRetry(); };
+      banner.appendChild(btn);
+    }
+    els.errorSlot.appendChild(banner);
+  }
+
+  function clearError(){ els.errorSlot.innerHTML = ''; }
+
+  async function loadEntries(){
+    els.loading.hidden = false;
+    els.empty.hidden = true;
+    try {
+      let result = null;
+      try {
+        result = await window.storage.get(STORAGE_KEY, false);
+      } catch (e) {
+        result = null; // key not found yet — that's fine, treat as empty
+      }
+      entries = result && result.value ? JSON.parse(result.value) : [];
+      clearError();
+    } catch (e) {
+      showError('Deine Einträge konnten nicht geladen werden.', loadEntries);
+      entries = [];
+    }
+    els.loading.hidden = true;
+    render();
+  }
+
+  async function persist(){
+    try {
+      const result = await window.storage.set(STORAGE_KEY, JSON.stringify(entries), false);
+      if (!result) throw new Error('no result');
+      clearError();
+      return true;
+    } catch (e) {
+      showError('Speichern hat nicht geklappt. Bitte versuch es noch einmal.', () => persist());
+      return false;
+    }
+  }
+
+  function formatDateLong(iso){
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long' });
+  }
+
+  function sortedEntries(){
+    return [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  function hexToRgb(hex){
+    const n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function mix(c1, c2, t){
+    return c1.map((v, i) => Math.round(v + (c2[i] - v) * t));
+  }
+  const STOP_GOLD = hexToRgb('#e8a657');
+  const STOP_CORAL = hexToRgb('#e2795a');
+  const STOP_PLUM = hexToRgb('#8a6fa0');
+  function dayColor(index, total){
+    const t = total <= 1 ? 0 : index / (total - 1);
+    const rgb = t < 0.5 ? mix(STOP_GOLD, STOP_CORAL, t / 0.5) : mix(STOP_CORAL, STOP_PLUM, (t - 0.5) / 0.5);
+    return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+  }
+
+  function iconEdit(){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+  }
+  function iconTrash(){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg>';
+  }
+  function iconCheck(){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6 9 17l-5-5"/></svg>';
+  }
+  function iconX(){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+  }
+
+  function render(){
+    const sorted = sortedEntries();
+    els.empty.hidden = sorted.length !== 0;
+    els.list.innerHTML = '';
+    els.pills.innerHTML = '';
+
+    sorted.forEach((entry, i) => {
+      const color = dayColor(i, sorted.length);
+
+      // pill
+      const pill = document.createElement('button');
+      pill.className = 'pill';
+      pill.type = 'button';
+      pill.textContent = `Tag ${i + 1}`;
+      pill.style.borderColor = 'transparent';
+      pill.onclick = () => {
+        document.getElementById('entry-' + entry.id).scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+      els.pills.appendChild(pill);
+
+      // card
+      const card = document.createElement('article');
+      card.className = 'entry card';
+      card.id = 'entry-' + entry.id;
+      card.style.setProperty('--day-color', color);
+
+      if (editingId === entry.id){
+        card.innerHTML = `
+          <div class="entry-head">
+            <div class="entry-head-left">
+              <span class="day-badge">Tag ${i + 1}</span>
+              <span class="entry-date">${formatDateLong(entry.date)}</span>
+            </div>
+          </div>
+          <div class="entry-edit">
+            <label style="margin-bottom:6px;">Datum</label>
+            <input type="date" class="edit-date" value="${entry.date}" style="max-width:220px;margin-bottom:14px;">
+            <label><span class="dot dot-high"></span>Highlight</label>
+            <textarea class="edit-highlight" rows="2">${escapeHtml(entry.highlight || '')}</textarea>
+            <label><span class="dot dot-low"></span>Lowlight</label>
+            <textarea class="edit-lowlight" rows="2">${escapeHtml(entry.lowlight || '')}</textarea>
+            <div class="edit-actions">
+              <button type="button" class="btn-ghost cancel-inline">Abbrechen</button>
+              <button type="button" class="btn-primary save-inline">Speichern</button>
+            </div>
+          </div>
+        `;
+        card.querySelector('.cancel-inline').onclick = () => { editingId = null; render(); };
+        card.querySelector('.save-inline').onclick = async () => {
+          const newDate = card.querySelector('.edit-date').value;
+          const newHigh = card.querySelector('.edit-highlight').value.trim();
+          const newLow = card.querySelector('.edit-lowlight').value.trim();
+          if (!newDate){ return; }
+          if (!newHigh && !newLow){ return; }
+          const target = entries.find(e => e.id === entry.id);
+          target.date = newDate;
+          target.highlight = newHigh;
+          target.lowlight = newLow;
+          editingId = null;
+          render();
+          await persist();
+        };
+      } else {
+        card.innerHTML = `
+          <div class="entry-head">
+            <div class="entry-head-left">
+              <span class="day-badge">Tag ${i + 1}</span>
+              <span class="entry-date">${formatDateLong(entry.date)}</span>
+            </div>
+            <div class="entry-tools">
+              <button class="icon-btn edit-btn" type="button" aria-label="Eintrag bearbeiten">${iconEdit()}</button>
+              <button class="icon-btn delete-btn" type="button" aria-label="Eintrag löschen">${iconTrash()}</button>
+            </div>
+          </div>
+          <div class="entry-body">
+            <div class="block">
+              <div class="block-label"><span class="dot dot-high"></span>Highlight</div>
+              <div class="block-text ${entry.highlight ? '' : 'empty'}">${entry.highlight ? escapeHtml(entry.highlight) : 'Kein Highlight notiert'}</div>
+            </div>
+            <div class="block">
+              <div class="block-label"><span class="dot dot-low"></span>Lowlight</div>
+              <div class="block-text ${entry.lowlight ? '' : 'empty'}">${entry.lowlight ? escapeHtml(entry.lowlight) : 'Kein Lowlight notiert'}</div>
+            </div>
+          </div>
+        `;
+        card.querySelector('.edit-btn').onclick = () => { editingId = entry.id; render(); };
+        card.querySelector('.delete-btn').onclick = async () => {
+          card.querySelector('.delete-btn').innerHTML = iconCheck();
+          card.querySelector('.delete-btn').setAttribute('aria-label', 'Wirklich löschen? Nochmal klicken');
+          card.querySelector('.delete-btn').onclick = async () => {
+            entries = entries.filter(e => e.id !== entry.id);
+            render();
+            await persist();
+          };
+        };
+      }
+
+      els.list.appendChild(card);
+    });
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function resetForm(){
+    els.date.value = new Date().toISOString().slice(0, 10);
+    els.highlight.value = '';
+    els.lowlight.value = '';
+    els.formError.textContent = '';
+    editingId = null;
+    els.composerTitle.textContent = 'Neuer Eintrag';
+    els.submitBtn.textContent = 'Eintrag speichern';
+    els.cancelBtn.hidden = true;
+  }
+
+  els.form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const date = els.date.value;
+    const highlight = els.highlight.value.trim();
+    const lowlight = els.lowlight.value.trim();
+
+    if (!date){
+      els.formError.textContent = 'Bitte ein Datum wählen.';
+      return;
+    }
+    if (!highlight && !lowlight){
+      els.formError.textContent = 'Bitte mindestens ein Highlight oder Lowlight eintragen.';
+      return;
+    }
+    els.formError.textContent = '';
+
+    const existing = entries.find(e => e.date === date);
+    if (existing){
+      existing.highlight = highlight;
+      existing.lowlight = lowlight;
+    } else {
+      entries.push({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+        date,
+        highlight,
+        lowlight,
+      });
+    }
+    resetForm();
+    render();
+    await persist();
+  });
+
+  loadEntries();
+})();
+</script>
+</body>
+</html>
